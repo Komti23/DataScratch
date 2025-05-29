@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minecraft Datapack Builder</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>Minecraft Datapack Builder</header>
+<div class="container">
+  <div class="functions-bar">
+    <label>Функция:</label>
+    <select id="functionSelect"></select>
+    <input type="text" id="newFunctionName" placeholder="Новая функция">
+    <button onclick="createFunction()">Создать</button>
+  </div>
+  <div class="toolbox">
+    <button onclick="addSayBlock()">Сказать</button>
+    <button onclick="addTeleportBlock()">Телепорт</button>
+    <button onclick="addSummonBlock()">Призвать моба</button>
+    <button onclick="addDelayBlock()">Задержка</button>
+    <button onclick="addCallFunctionBlock()">Вызов функции</button>
+    <button onclick="addConditionBlock()">Условие (позиция)</button>
+    <button onclick="addCommandBlock()">Пользовательская команда</button>
+  </div>
+  <div class="workspace" id="workspace"></div>
+  <div class="footer">
+    <button class="btn" onclick="downloadDatapack()">Скачать дата-пак</button>
+  </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
