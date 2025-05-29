@@ -207,9 +207,15 @@ function downloadDatapack() {
   }
 
   zip.generateAsync({ type: "blob" }).then(blob => {
+    const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "datapack.zip";
+    a.href = url;
+    a.setAttribute("download", "datapack.zip");
+    document.body.appendChild(a);
     a.click();
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+      a.remove();
+    }, 1000);
   });
 }
