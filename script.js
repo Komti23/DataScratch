@@ -1,5 +1,3 @@
-// script.js
-
 let functions = { main: [] };
 let currentFunction = 'main';
 
@@ -150,6 +148,86 @@ function addConditionBlock() {
   createBlock('<label>Если игрок на координатах:</label><input type="text" placeholder="x y z">');
 }
 
+function addKillBlock() {
+  const block = document.createElement('div');
+  block.classList.add('block');
+
+  block.innerHTML = `
+    <label>Убить:</label>
+    <select id="targetSelect">
+      <option value="@a">@a (Все игроки)</option>
+      <option value="@p">@p (Ближайший игрок)</option>
+      <option value="@r">@r (Случайный игрок)</option>
+      <option value="@e">@e (Все сущности)</option>
+    </select>
+    <select id="entitySelect" style="display:none; margin-left:10px;">
+      <option value="zombie">Zombie</option>
+      <option value="skeleton">Skeleton</option>
+      <option value="creeper">Creeper</option>
+      <option value="cow">Cow</option>
+      <option value="pig">Pig</option>
+      <!-- Добавь нужные сущности -->
+    </select>
+  `;
+
+  const targetSelect = block.querySelector('#targetSelect');
+  const entitySelect = block.querySelector('#entitySelect');
+
+  targetSelect.addEventListener('change', () => {
+    if (targetSelect.value === '@e') {
+      entitySelect.style.display = 'inline-block';
+    } else {
+      entitySelect.style.display = 'none';
+    }
+  });
+
+  document.getElementById('workspace').appendChild(block);
+}
+
+
+
+function addExecuteBlock() {
+  const structure = `
+    <label>Execute:</label>
+    <select>
+      <option value="if">if</option>
+      <option value="unless">unless</option>
+    </select>
+    <input type="text" placeholder="entity @p, block ~ ~-1 ~ minecraft:stone и т.п.">
+    <select>
+      <option value="run">run</option>
+    </select>
+    <input type="text" placeholder="say Hello или другая команда">
+  `;
+  createBlock(structure);
+}
+
+function addKillListBlock() {
+  createBlock('<label>Список целей (через запятую):</label><input type="text" placeholder="@e[type=zombie],@e[type=skeleton]">');
+}
+
+function addBlockButtons() {
+  const toolbox = document.querySelector('.toolbox');
+
+  const killButton = document.createElement('button');
+  killButton.textContent = 'Убить';
+  killButton.onclick = addKillBlock;
+  toolbox.appendChild(killButton);
+
+  const killListButton = document.createElement('button');
+  killListButton.textContent = 'Убить список';
+  killListButton.onclick = addKillListBlock;
+  toolbox.appendChild(killListButton);
+
+  const executeButton = document.createElement('button');
+  executeButton.textContent = 'Execute';
+  executeButton.onclick = addExecuteBlock;
+  toolbox.appendChild(executeButton);
+}
+
+window.addEventListener('DOMContentLoaded', addBlockButtons);
+
+
 function addCommandBlock() {
   createBlock('<label>Пользовательская команда:</label><input type="text" placeholder="say Привет">');
 }
@@ -174,33 +252,39 @@ function downloadDatapack() {
     let delayedLines = [];
     let hasDelay = false;
 
-    htmlList.forEach(({ html, values }) => {
-      const div = document.createElement('div');
-      div.innerHTML = html;
-      const block = div.firstChild;
-      if (!block) return;
-      const label = block.querySelector('label')?.textContent || '';
-      const inputs = block.querySelectorAll('input, select');
-      inputs.forEach((input, index) => input.value = values[index] || '');
+  htmlList.forEach(({ html, values }) => {
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    const block = div.firstChild;
+    if (!block) return;
+    const label = block.querySelector('label')?.textContent || '';
+    const inputs = block.querySelectorAll('input, select');
+    inputs.forEach((input, index) => input.value = values[index] || '');
 
-      if (label.includes("Текст")) {
-        (hasDelay ? delayedLines : lines).push(`say ${inputs[0].value}`);
-      } else if (label.includes("Координаты:") && inputs.length === 1) {
-        (hasDelay ? delayedLines : lines).push(`tp @p ${inputs[0].value}`);
-      } else if (label.includes("Моб")) {
-        (hasDelay ? delayedLines : lines).push(`summon ${inputs[0].value} ${inputs[1].value}`);
-      } else if (label.includes("Задержка")) {
-        const delayTicks = parseInt(inputs[0].value) || 0;
-        hasDelay = true;
-        lines.push(`schedule function ${namespace}:${name}_delayed ${delayTicks}t`);
-      } else if (label.includes("Вызов функции")) {
-        (hasDelay ? delayedLines : lines).push(`function ${namespace}:${inputs[0].value}`);
-      } else if (label.includes("Если игрок")) {
-        (hasDelay ? delayedLines : lines).push(`execute if entity @a[x=${inputs[0].value}] run say Игрок найден`);
-      } else if (label.includes("Пользовательская")) {
-        (hasDelay ? delayedLines : lines).push(inputs[0].value);
+    if (label.includes("Убить")) {
+      let target = inputs[0].value;
+      if (target === '@e' && inputs.length > 1 && inputs[1].value) {
+        target += `[type=${inputs[1].value}]`;
       }
-    });
+      (hasDelay ? delayedLines : lines).push(`kill ${target}`);
+    } else if (label.includes("Текст")) {
+      (hasDelay ? delayedLines : lines).push(`say ${inputs[0].value}`);
+    } else if (label.includes("Координаты:") && inputs.length === 1) {
+      (hasDelay ? delayedLines : lines).push(`tp @p ${inputs[0].value}`);
+    } else if (label.includes("Моб")) {
+      (hasDelay ? delayedLines : lines).push(`summon ${inputs[0].value} ${inputs[1].value}`);
+    } else if (label.includes("Задержка")) {
+      const delayTicks = parseInt(inputs[0].value) || 0;
+      hasDelay = true;
+      lines.push(`schedule function ${namespace}:${name}_delayed ${delayTicks}t`);
+    } else if (label.includes("Вызов функции")) {
+      (hasDelay ? delayedLines : lines).push(`function ${namespace}:${inputs[0].value}`);
+    } else if (label.includes("Если игрок")) {
+      (hasDelay ? delayedLines : lines).push(`execute if entity @a[x=${inputs[0].value}] run say Игрок найден`);
+    } else if (label.includes("Пользовательская")) {
+      (hasDelay ? delayedLines : lines).push(inputs[0].value);
+    }
+  });
 
     datapack.file(`${name}.mcfunction`, lines.join("\n"));
     if (hasDelay && delayedLines.length > 0) {
