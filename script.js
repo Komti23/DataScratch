@@ -15,6 +15,8 @@ function updateFunctionSelect() {
   }
 }
 
+window.onload = updateFunctionSelect
+
 function createFunction() {
   const name = document.getElementById('newFunctionName').value.trim();
   if (name && !functions[name]) {
